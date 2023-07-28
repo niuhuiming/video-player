@@ -1,0 +1,116 @@
+<div class="video-box">
+  <!-- 强行插入苹果广告 -->
+  <video src="../server/public/video.mp4"></video>
+  <!-- 控制条 -->
+  <div class="ctrl-box">
+    <!-- 进度条 -->
+    <div class="progress-box">
+      <div class="progress"></div>
+    </div>
+    <div class="play-btn">播放/暂停</div>
+    <div class="progress-time">00:00/00:00</div>
+  </div>
+</div>
+
+<script>
+  var video = document.querySelector('video')
+  var progressBox = document.querySelector('.progress-box')
+  var progress = document.querySelector('.progress')
+  var progressTimer = null // 进度 timer
+
+  // 计算时长，注意：这里的 padStart 是 es7 语法
+  function parseTime(value) {
+    if (!value) return ''
+    let interval = Math.floor(value)
+    let minute = (Math.floor(interval / 60)).toString().padStart(2, '0')
+    let second = (interval % 60).toString().padStart(2, '0')
+    return `${minute}:${second}`
+  }
+  // 推进进度条
+  function changeProgress() {
+    var timeStr = parseTime(video.currentTime) + '/' + parseTime(video.duration)
+    document.querySelector('.ctrl-box .progress-time').innerText = timeStr
+    var percent = video.currentTime / video.duration
+    progress.style.width = percent * 100 + '%'
+  }
+  // 点击进度条的任意地方
+  progressBox.onclick = function (e) {
+    clearInterval(progressTimer)
+    var length = e.pageX - progressBox.offsetLeft
+    var percent = length / progressBox.offsetWidth
+    video.currentTime = percent * video.duration
+    video.play()
+    progressTimer = setInterval(changeProgress, 60)
+    // 显示视频在播放的样式
+    // ...
+  }
+  // 播放&暂停点击
+  document.querySelector('.play-btn').onclick = function () {
+    if (video.paused) {
+      // 播放后，需要推进进度条
+      video.play()
+      progressTimer = setInterval(changeProgress, 60)
+    } else {
+      // 暂停后，需要停止推进进度条
+      video.pause()
+      clearInterval(progressTimer)
+    }
+  }
+</script>
+
+<style>
+  /*
+    样式简单写了下，大概就是
+    progress-box： 写一个固定的宽度，用相对定位，写个边框颜色
+    progress： 写个背景颜色，宽度随 js 改变即可
+   */
+  * {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  .video-box {
+    width: 100%;
+    height: auto;
+  }
+
+  video {
+    width: 100%;
+  }
+
+  .ctrl-box {
+    width: 80%;
+    margin: 0 auto;
+  }
+
+  .ctrl-box .progress-box {
+    position: relative;
+    height: 30px;
+    margin-bottom: 10px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgb(131, 175, 155);
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .ctrl-box .progress-box .progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background: rgb(131, 175, 155);
+  }
+
+  .ctrl-box .play-btn {
+    display: inline-block;
+    margin-right: 20px;
+    cursor: pointer;
+  }
+
+  .ctrl-box .progress-time {
+    display: inline-block;
+  }
+</style>
